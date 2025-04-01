@@ -14,19 +14,29 @@ export async function getCabins() {
   return data;
 }
 
-export async function createCabin(newCabin) {
+export async function createEditCabin(newCabin, id) {
+  const hasImagePath = newCabin.image?.startsWith?.(supabaseUrl);
+
   const imageName = `${Math.random()}-${newCabin.image.name}`.replaceAll(
     "/",
     ""
   );
-  const imagePath = `${supabaseUrl}/storage/v1/object/public/cabin-images/${imageName}`;
-  // https://nettxaarfoalzldbrltg.supabase.co/storage/v1/object/public/cabin-images//cabin-001.jpg
-  // 1. Create Cabin
-  const { data, error } = await supabase
-    .from("cabins")
-    .insert([{ ...newCabin, image: imagePath }]) //this work because we used the same for the field in the db and inside the form to create the obj
-    .select();
 
+  const imagePath = hasImagePath
+    ? newCabin.image
+    : `${supabaseUrl}/storage/v1/object/public/cabin-images/${imageName}`;
+  // https://nettxaarfoalzldbrltg.supabase.co/storage/v1/object/public/cabin-images//cabin-001.jpg
+
+  // 1. Create/edit Cabin
+  let query = supabase.from("cabins");
+
+  // A) CREATE
+  if (!id) query = query.insert([{ ...newCabin, image: imagePath }]); //this work because we used the same for the field in the db and inside the form to create the obj
+
+  // B) EDIT
+  if (id) query = query.update({ ...newCabin, image: imagePath }).eq("id", id);
+
+  const { data, error } = await query.select().single();
   if (error) {
     console.error(error);
     throw new Error("Cabins could not be created");
@@ -45,6 +55,8 @@ export async function createCabin(newCabin) {
       "Cabin image could not be uploaded and the cabin was not created"
     );
   }
+
+  return data;
 }
 
 //on supabase to get access to the DELETE for the function we need to set up a policy for it
