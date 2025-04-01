@@ -81,11 +81,11 @@ keep in mind that if you are doing this on your own you might now figure all of 
 
 ---
 
-**TECH DECISIONS**
+## TECH DECISIONS
 
 ---
 
-##Front End
+### Front End
 
 - Routing ---> React Router --- standard for React SPAs
 
@@ -259,3 +259,101 @@ And we make use of those toast like this :
         },
         onError: (err) => toast.error(err.message),    <== toast on error instead of the alert
       });
+
+# React-hook-form
+
+it's a library that let's abstract the control of a form and with the use of some custom hooks get access to all the values, controls and logic of a form
+
+## useForm
+
+custom hook that give access to vary methods to be used in a form
+
+       const { register, handleSubmit, reset, getValues, formState } = useForm();
+
+- register, we use it to spread inside a input the onBlur and onChange attributes already controlled by the hook
+
+        <Input
+          type="text"
+          id="name"
+          disabled={isPending}
+          {...register("name")}
+         />
+
+- handleSubmit, lets me define what happens on submit by defining a first function for success, and second one for error that the handle will call for me
+
+        function onSubmit(data) {
+        mutate(data);
+        }
+
+        <Form onSubmit={handleSubmit(onSubmit, onError)}>
+
+- reset, method given to us by useForm that reset the state of the form to it's initialState (usually empty)
+
+        const { isPending, mutate } = useMutation({
+        mutationFn: createCabin,
+        onSuccess: () => {
+          toast.success("New cabin successfully created");
+          queryClient.invalidateQueries({ queryKey: ["cabins"] });
+          reset();
+        },
+        onError: (err) => toast.error(err.message),
+        });
+
+- getValues, method given that when called give us a object with all the values of the form, that we can use to do validation inside the form for example
+
+         <Input
+          type="number"
+          id="discount"
+          defaultValue={0}
+          disabled={isPending}
+          {...register("discount", {
+            required: "This field is required",
+            valueAsNumber: true,
+            validate: (value) =>
+              value <= getValues().regularPrice ||
+              "Discount should be less than the regular price",
+          })}
+        />
+
+- formState, it's an object that contain a lot of data about the form, one of which is 'errors' that contains the error throw by the form
+
+        const { errors } = formState;
+
+          function onError(errors) {
+           console.log(errors);
+          }
+
+## Form Validation
+
+we can define some pre-defined validator inside the form or make a custom one if none of the already existing one is enough
+
+ex. defined ones (required, min [determine the min value for the field, and the message to be given in case of error]):
+
+         <Input
+          type="number"
+          id="maxCapacity"
+          disabled={isPending}
+          {...register("maxCapacity", {
+            required: "This field is required",
+            min: {
+              value: 1,
+              message: "Capacity should be at least 1",
+            },
+          })}
+        />
+
+ex. custom ones, we define it by using the validate field and passing in a cb function that will handle the validation, in this case if the discount is higher than the currently inputed price it will send back the error message if it's correct it will authorize the value
+
+        <Input
+          type="number"
+          id="discount"
+          defaultValue={0}
+          disabled={isPending}
+          {...register("discount", {
+            required: "This field is required",
+            valueAsNumber: true,
+            validate: (value) =>
+              value <= getValues().regularPrice ||
+              "Discount should be less than the regular price",
+          })}
+        />
