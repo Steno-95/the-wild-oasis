@@ -28,7 +28,7 @@ const TableHeader = styled.header`
 `;
 
 function CabinTable() {
-  const { isPending, cabins, error } = useCabins();
+  const { isPending, cabins } = useCabins();
 
   if (isPending) return <Spinner />;
   return (

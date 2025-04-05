@@ -63,19 +63,22 @@ export async function createEditCabin(newCabin, id) {
 
 //on supabase to get access to the DELETE for the function we need to set up a policy for it
 export async function deleteCabins(id) {
-  const query = supabase.from("cabins");
+  //select all entries on db for comparison
+  const { data, error: cabinReadError } = await supabase
+    .from("cabins")
+    .select("*");
 
-  const { data, error: cabinReadError } = await query.select("*");
-
+  //identify the element to delete
   const cabin = data.filter((item) => item.id === id).at(0);
+  //check if in all the entries there is more than one element that points at the same image in the bucket and store them in an array
   const imgUsed = data.filter((item) => item.image === cabin.image);
-  console.log(cabin);
-  console.log(imgUsed);
 
   if (cabinReadError) {
     console.error(cabinReadError);
     throw new Error("Can't retrieve cabin information from DB");
   }
+
+  //identify the name of the file to delete
   const imgFileName = cabin.image.split("/").at(-1);
 
   const { error } = await supabase.from("cabins").delete().eq("id", id);
@@ -84,6 +87,7 @@ export async function deleteCabins(id) {
     throw new Error("Cabins could not be deleted");
   }
 
+  //check if more than one element uses the image if yes it terminate otherwise proced to delete from the bucket
   if (imgUsed.length !== 1) return;
 
   const { error: errorStorage } = await supabase.storage
