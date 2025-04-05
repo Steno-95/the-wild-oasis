@@ -357,3 +357,25 @@ ex. custom ones, we define it by using the validate field and passing in a cb fu
               "Discount should be less than the regular price",
           })}
         />
+
+## useForm optionObject
+
+The useForm hooks can take a optionObject as parameter that can define for example the defaultValue of the form, which in this case we use to prefill the form with the already existing values of the field in case of the edit form.
+
+    const { register, handleSubmit, reset, getValues, formState } = useForm({
+    defaultValues: isEditSession ? editValues : {},
+    });
+
+## useMutation toNote
+
+toNote: about the useMutation hooks, the mutationfn cb can actually take only one parameter, so in case we need more than one we have to compose them in a object before passing it in.
+
+    const { isPending: isEditing, mutate: editCabin } = useMutation({
+        mutationFn: ({ newCabinData, id }) => createEditCabin(newCabinData, id),
+        onSuccess: () => {
+          toast.success("Cabin successfully edited");
+          queryClient.invalidateQueries({ queryKey: ["cabins"] });
+          reset();
+        },
+        onError: (err) => toast.error(err.message),
+      });

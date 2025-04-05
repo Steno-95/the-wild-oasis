@@ -43,6 +43,8 @@ export async function createEditCabin(newCabin, id) {
   }
 
   // 2. Upload image
+  if (hasImagePath) return data;
+
   const { error: storageError } = await supabase.storage
     .from("cabin-images")
     .upload(imageName, newCabin.image);
@@ -61,22 +63,29 @@ export async function createEditCabin(newCabin, id) {
 
 //on supabase to get access to the DELETE for the function we need to set up a policy for it
 export async function deleteCabins(id) {
-  const { data: cabin, error: cabinReadError } = await supabase
-    .from("cabins")
-    .select("*")
-    .eq("id", id);
+  const query = supabase.from("cabins");
+
+  const { data, error: cabinReadError } = await query.select("*");
+
+  const cabin = data.filter((item) => item.id === id).at(0);
+  const imgUsed = data.filter((item) => item.image === cabin.image);
+  console.log(cabin);
+  console.log(imgUsed);
 
   if (cabinReadError) {
     console.error(cabinReadError);
     throw new Error("Can't retrieve cabin information from DB");
   }
-  const imgFileName = cabin[0].image.split("/").at(-1);
+  const imgFileName = cabin.image.split("/").at(-1);
 
   const { error } = await supabase.from("cabins").delete().eq("id", id);
   if (error) {
     console.error(error);
     throw new Error("Cabins could not be deleted");
   }
+
+  if (imgUsed.length !== 1) return;
+
   const { error: errorStorage } = await supabase.storage
     .from("cabin-images")
     .remove([imgFileName]);
