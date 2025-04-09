@@ -99,7 +99,7 @@ keep in mind that if you are doing this on your own you might now figure all of 
 
 Other tools ---> React icons / React hot toast / Recharts / date-fns / Supabase
 
-** React Query || tanstack query **
+## ** React Query || tanstack query **
 
 We create a query Client to set up the relative provider to make then the query work for most of the app based on where this provider is located, the same thing as any other provider so far.
 
@@ -379,3 +379,229 @@ toNote: about the useMutation hooks, the mutationfn cb can actually take only on
         },
         onError: (err) => toast.error(err.message),
       });
+
+## Render Props Pattern
+
+What it means is that not always is possible to pass a set jsx to a component for reusability, because it might have some logic that is hard to reuse without writing a separate component. The solution that came out of this is the Render Props Pattern that basically makes you pass to the component the function needed to render. For example if you have different lists that should display different items, is possible to reuse the list components by specifying the login of the map function with the render props, so you basically from outside you give to the component throught the render props which component it should display and with what props
+
+    function List({ title, items, render }) {
+    const [isOpen, setIsOpen] = useState(true);
+    const [isCollapsed, setIsCollapsed] = useState(false);
+
+    const displayItems = isCollapsed ? items.slice(0, 3) : items;
+
+    function toggleOpen() {
+      setIsOpen((isOpen) => !isOpen);
+      setIsCollapsed(false);
+    }
+
+    return (
+      <div className="list-container">
+        <div className="heading">
+          <h2>{title}</h2>
+          <button onClick={toggleOpen}>
+            {isOpen ? <span>&or;</span> : <span>&and;</span>}
+          </button>
+        </div>
+        /*Here we can see that the map method takes the render prop, normaly it would be the normal item => <Item /> with whatever props we were going to pass in, doing it this way makes it dinamic without the use of the children prop and with more personalization*/
+        {isOpen && <ul className="list">{displayItems.map(render)}</ul>}
+
+      <button onClick={() => setIsCollapsed((isCollapsed) => !isCollapsed)}>
+        {isCollapsed ? `Show all ${items.length}` : "Show less"}
+      </button>
+      </div>
+    );
+    }
+
+example of the render props with different functions to display different items
+
+    export default function App() {
+    return (
+      <div>
+        <h1>Render Props Demo</h1>
+
+        <div className="col-2">
+          <List
+            title="Products"
+            items={products}
+            render={(product) => (
+              <ProductItem key={product.productName} product={product} />
+            )}
+          />
+
+          <List
+            title="Companies"
+            items={companies}
+            render={(company) => (
+              <CompanyItem
+                key={company.companyName}
+                company={company}
+                defaultVisibility={false}
+              />
+            )}
+          />
+        </div>
+      </div>
+    );
+    }
+
+## HOC Higher Order Components
+
+Stands for an enhanced component, usually used when you get a component from a 3-rd party library that you can't modify to suit your case with some logic, so you basically create a function that takes the components and return an enhanced components with the new logic added to it,
+
+3-rd party component example:
+
+    function ProductList({ title, items }) {
+      return (
+        <ul className="list">
+          {items.map((product) => (
+            <ProductItem key={product.productName} product={product} />
+          ))}
+        </ul>
+      );
+    }
+
+enhanced component returned:
+
+    export default function withToggles(WrappedComponent) {
+    return function List(props) {
+      const [isOpen, setIsOpen] = useState(true);
+      const [isCollapsed, setIsCollapsed] = useState(false);
+
+      const displayItems = isCollapsed ? props.items.slice(0, 3) : props.items;
+
+      function toggleOpen() {
+        setIsOpen((isOpen) => !isOpen);
+        setIsCollapsed(false);
+      }
+
+      return (
+        <div className="list-container">
+          <div className="heading">
+            <h2>{props.title}</h2>
+            <button onClick={toggleOpen}>
+              {isOpen ? <span>&or;</span> : <span>&and;</span>}
+            </button>
+          </div>
+          {isOpen && <WrappedComponent {...props} items={displayItems} />}
+
+          <button onClick={() => setIsCollapsed((isCollapsed) => !isCollapsed)}>
+            {isCollapsed ? `Show all ${props.items.length}` : "Show less"}
+          </button>
+        </div>
+      );
+    };
+     }
+
+## Compound Component Pattern
+
+Is a bit of more work to write it down as there is more steps from setting up the context api, create a component, even if simple, for each part and then add them all as property to the principal component to be exported outside, this way we have component that only work with a specific parent but that are extremely personalizable without the need to use a lot of props
+
+Example
+
+    import { useState, createContext, useContext } from "react";
+
+    //1. Create a context
+    const CounterContext = createContext();
+
+    //2. Create Parent Component
+    function Counter({ children }) {
+      const [count, setCount] = useState(0);
+      const increase = () => setCount((c) => c + 1);
+      const decrease = () => setCount((c) => c - 1);
+
+      return (
+        <CounterContext.Provider value={{ count, increase, decrease }}>
+          <span>{children}</span>
+        </CounterContext.Provider>
+      );
+    }
+
+    //3. Create Child components that will help implementing the common task
+    function Count() {
+      const { count } = useContext(CounterContext);
+      return <span> {count} </span>;
+    }
+    function Label({ children }) {
+      return <span>{children} </span>;
+    }
+    function Increase({ icon }) {
+      const { increase } = useContext(CounterContext);
+      return <button onClick={increase}>{icon}</button>;
+    }
+    function Decrease({ icon }) {
+      const { decrease } = useContext(CounterContext);
+      return <button onClick={decrease}>{icon}</button>;
+    }
+    //4. Add child components as properties to parent components
+
+    Counter.Count = Count;
+    Counter.Label = Label;
+    Counter.Increase = Increase;
+    Counter.Decrease = Decrease;
+
+    export default Counter;
+
+Example of the power of a Compount Component
+
+    export default function App() {
+      return (
+        <div>
+          <h1>Compound Component Pattern</h1>
+          //No need to pass a lot of props for personalization
+          {/*     <Counter
+            iconIncrease="+"
+            iconDecrease="-"
+            label="My NOT so flexible counter"
+            hideLabel={false}
+            hideIncrease={false}
+            hideDecrease={false}
+          />
+        */}
+
+        //You just call inside the Component the relative component piece you want to show, and give them their props
+          <Counter>
+            <Counter.Label>My Super Flexible Counter </Counter.Label>
+            <Counter.Decrease icon="-" />
+            <Counter.Increase icon="+" />
+            <Counter.Count />
+          </Counter>
+
+        //You can change the display simply by swapping around the order of their call, mixing in some htmls and so on
+          <div>
+            <Counter>
+            <div>
+              <Counter.Decrease icon="◀" />
+            <div>
+              <Counter.Count />
+            <div>
+              <Counter.Increase icon="▶" />
+            </div>
+            </Counter>
+          </div>
+        </div>
+      );
+    }
+
+## React Portal
+
+is a feature that allow us to render an element outside of a parent component dom structure, while still keeping the elements in the original position in the component tree.
+In other words it lets us render a component in any place we want inside the dom tree, while keeping it in the same place in the react tree so that the props work properly, usually used for components that want to stay on top of other element, like modals for example
+
+The syntax for it is instead of return the jsx element is to call the createPortal(), that take as first parameter, the jsx to return, the second argument where to place this element (document.body for example or document.querySelector())
+
+    function Modal({ children, onClose }) {
+      return createPortal(
+        <Overlay>
+          <StyledModal>
+            <Button onClick={onClose}>
+              <HiXMark />
+            </Button>
+            <div>{children}</div>
+          </StyledModal>
+        </Overlay>,
+        document.body
+      );
+    }
+
+portal is necessary mostly for reusability because you can encounter in the css some overflow hidden that cut out your modal, so by using the portal you can bypass this problem
