@@ -167,7 +167,7 @@ to get fetch data we use the useQuery custom hooks, that take an object with a q
     queryFn: getCabins,
     });
 
-to do mutation, which basically mean delete, update, create and so on, we use the useMutation custom hooks, that takes a mutationfn that will use to localize the data, and potentially a onSuccess callback function to handle the invalidation of the current data to force a refetching as soon as a mutation happens. The hook return a state to identify the current status of the operation and the function to actually handle the mutation that we can pass to an event handler or call ourself to start the mutation.
+to do mutation, which basically mean CRUD operation like delete, update, create and so on, we use the useMutation custom hooks, that takes a mutationfn that will use to localize the data, and potentially a onSuccess callback function to handle the invalidation of the current data to force a refetching as soon as a mutation happens. The hook return a state to identify the current status of the operation and the function to actually handle the mutation that we can pass to an event handler or call ourself to start the mutation.
 
     function CabinRow({ cabin }) {
       const {
@@ -183,7 +183,7 @@ to do mutation, which basically mean delete, update, create and so on, we use th
       const queryClient = useQueryClient();
 
       //Declaration of the useMutation custom hook, with the two callbacks, to evade confusion the first callback, deleteCabins, comes from the services/apiCabins were we declared the deleteCabins function by using the comand from supabase API docs.
-      //TO NOTE, invalidate is different from stale, stale is data that is gotten old and might have changed and needs to be refetched, a invalidated data is not acceptable so the script will immediately refetch and refresh the page which is why it makes  the mutation operation so fluid compared to not using the onSuccess cb because it would keep the mutated state as originally was until the user moves to a new page or a refresh happens.
+      //TO NOTE, invalidate is different from stale, stale is data that is gotten old and might have changed and needs to be refetched, a invalidated data is not acceptable so the script will immediately refetch and refresh the page which is why it makes  the mutation operation so fluid compared to not using the onSuccess cb (callback) because it would keep the mutated state as originally was until the user moves to a new page or a refresh happens.
 
       const { isPending, mutate } = useMutation({
         mutationFn: deleteCabins,
