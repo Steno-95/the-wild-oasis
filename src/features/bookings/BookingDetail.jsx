@@ -58,17 +58,13 @@ function BookingDetail() {
           </Button>
         )}
         {status === "checked-in" && (
-          <Button
-            icon={<HiArrowUpOnSquare />}
-            onClick={() => checkout(bookingId)}
-            disabled={isCheckingOut}
-          >
+          <Button onClick={() => checkout(bookingId)} disabled={isCheckingOut}>
             Check out
           </Button>
         )}
         <Modal>
           <Modal.Open opens="delete">
-            <Button variation="danger" disabled={isDeleting}>
+            <Button $variation="danger" disabled={isDeleting}>
               Delete booking
             </Button>
           </Modal.Open>
