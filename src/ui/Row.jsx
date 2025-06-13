@@ -1,6 +1,6 @@
 import styled, { css } from "styled-components";
 
-const Row = styled.div.attrs((props) => ({ $type: props.type || "vertical" }))`
+const Row = styled.div.attrs((props) => ({ type: props.$type || "vertical" }))`
   display: flex;
   ${(props) =>
     props.$type === "horizontal" &&
