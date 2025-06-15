@@ -39,8 +39,8 @@ const NoActivity = styled.p`
 function Today() {
   return (
     <StyledToday>
-      <Row type="horizontal">
-        <Heading as="h2">Today</Heading>
+      <Row $type="horizontal">
+        <Heading $as="h2">Today</Heading>
       </Row>
     </StyledToday>
   );

@@ -51,7 +51,7 @@ function LoginForm() {
         />
       </FormRowVertical>
       <FormRowVertical>
-        <Button size="large" disabled={isPending}>
+        <Button $size="large" disabled={isPending}>
           {!isPending ? "Login" : <SpinnerMini />}
         </Button>
       </FormRowVertical>

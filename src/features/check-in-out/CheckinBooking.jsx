@@ -65,7 +65,7 @@ function CheckinBooking() {
 
   return (
     <>
-      <Row type="horizontal">
+      <Row $variationtype="horizontal">
         <Heading $as="h1">Check in booking #{bookingId}</Heading>
         <ButtonText onClick={moveBack}>&larr; Back</ButtonText>
       </Row>
