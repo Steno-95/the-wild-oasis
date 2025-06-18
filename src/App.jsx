@@ -17,6 +17,8 @@ import Booking from "./pages/Booking";
 import Checkin from "./pages/Checkin";
 import ProtectedRoute from "./ui/ProtectedRoute";
 import { DarkModeProvider } from "./context/DarkModeProvider";
+import { ErrorBoundary } from "react-error-boundary";
+import ErrorFallback from "./ui/ErrorFallback";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -33,32 +35,38 @@ function App() {
       <QueryClientProvider client={queryClient}>
         <ReactQueryDevtools initialIsOpen={false} />
         <GlobalStyles />
-        <BrowserRouter>
-          <Routes>
-            <Route
-              element={
-                <ProtectedRoute>
-                  <AppLayout />
-                </ProtectedRoute>
-              }
-            >
+
+        <ErrorBoundary
+          FallbackComponent={ErrorFallback}
+          onReset={() => window.location.replace("/")}
+        >
+          <BrowserRouter>
+            <Routes>
               <Route
-                index
-                element={<Navigate replace to="dashboard" />}
-              ></Route>
-              <Route path="dashboard" element={<Dashboard />}></Route>
-              <Route path="bookings" element={<Bookings />}></Route>
-              <Route path="bookings/:bookingId" element={<Booking />}></Route>
-              <Route path="checkin/:bookingId" element={<Checkin />}></Route>
-              <Route path="cabins" element={<Cabins />}></Route>
-              <Route path="users" element={<Users />}></Route>
-              <Route path="settings" element={<Settings />}></Route>
-              <Route path="account" element={<Account />}></Route>
-            </Route>
-            <Route path="login" element={<Login />}></Route>
-            <Route path="*" element={<PageNotFound />}></Route>
-          </Routes>
-        </BrowserRouter>
+                element={
+                  <ProtectedRoute>
+                    <AppLayout />
+                  </ProtectedRoute>
+                }
+              >
+                <Route
+                  index
+                  element={<Navigate replace to="dashboard" />}
+                ></Route>
+                <Route path="dashboard" element={<Dashboard />}></Route>
+                <Route path="bookings" element={<Bookings />}></Route>
+                <Route path="bookings/:bookingId" element={<Booking />}></Route>
+                <Route path="checkin/:bookingId" element={<Checkin />}></Route>
+                <Route path="cabins" element={<Cabins />}></Route>
+                <Route path="users" element={<Users />}></Route>
+                <Route path="settings" element={<Settings />}></Route>
+                <Route path="account" element={<Account />}></Route>
+              </Route>
+              <Route path="login" element={<Login />}></Route>
+              <Route path="*" element={<PageNotFound />}></Route>
+            </Routes>
+          </BrowserRouter>
+        </ErrorBoundary>
         <Toaster
           position="top-center"
           gutter={12}
